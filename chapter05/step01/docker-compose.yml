@@ -1,0 +1,27 @@
+# Docker Composeのバージョン
+version: "3.8"
+
+services:
+
+  # -----------------------------
+  # Spring Boot アプリ
+  # -----------------------------
+  spring-app:
+
+    # Dockerfileからビルド
+    build: .
+
+    # コンテナ名
+    container_name: spring-app
+
+    # ポート設定
+    ports:
+      - "8082:8080"
+
+  # =========================
+  # テスト（Mockito / JUnit）
+  # =========================
+  test:
+    build: .
+    container_name: spring-test
+    command: ./mvnw test      

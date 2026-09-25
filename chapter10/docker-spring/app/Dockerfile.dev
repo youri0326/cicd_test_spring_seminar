@@ -1,0 +1,33 @@
+# -----------------------------
+# ビルド引数を受け取るARGを定義
+# -----------------------------
+ARG ACCOUNT_ID=default
+ARG REGION=ap-northeast-1
+ARG ECR_REPO_Maven=default
+ARG ECR_REPO_JDK=default
+
+# STEP 1: ビルド環境 (builder)
+FROM ${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${ECR_REPO_Maven}:3.9.6-eclipse-temurin-17 AS builder
+
+WORKDIR /app
+COPY . .
+# 実行環境でも使うためにここでビルドしておく
+RUN ./mvnw package -DskipTests
+
+# STEP 2: 実行環境 (開発・テスト両用)
+FROM ${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${ECR_REPO_JDK}:17-jdk-alpine
+
+WORKDIR /app
+
+# 【重要】ソースコード、mvnw、ビルド済みjarをすべて実行環境へコピー
+# これにより、ブラウザ確認とコンテナ内テストが両立できる
+COPY --from=builder /app .
+
+# Spring Boot起動
+# java -jar target/*.jar と直接書くと、
+# Javaは律儀に「*.jarという名前のファイル」を探しに行ってしまい、
+# 見つからずにエラーになります。
+# これを解決するには、
+# 一度シェル（sh）を介して、
+# ワイルドカードを展開させてからJavaに渡す必要があります。
+CMD ["sh", "-c", "java -jar target/*.jar"]

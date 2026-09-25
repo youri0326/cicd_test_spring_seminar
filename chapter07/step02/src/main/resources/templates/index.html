@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>User List</title>
+</head>
+<body>
+
+<h1>ユーザー一覧</h1>
+
+<!-- メッセージ表示 -->
+<p th:if="${message}" th:text="${message}" style="color: green;"></p>
+<p th:if="${error}" th:text="${error}" style="color: red;"></p>
+
+<!-- ユーザーリスト -->
+<ul>
+    <li th:each="user : ${users}">
+        <!-- ユーザー名をクリックすると詳細画面へ移動 -->
+        <a th:href="@{/user/{id}(id=${user.id})}" th:text="${user.name}">名前</a>
+        (<span th:text="${user.email}">メール</span>)
+    </li>
+</ul>
+
+<!-- リストが空の場合の表示 -->
+<p th:if="${#lists.isEmpty(users)}">登録されているユーザーはいません。</p>
+
+<hr>
+
+<p><a th:href="@{/register}">新規登録画面へ</a></p>
+
+</body>
+</html>

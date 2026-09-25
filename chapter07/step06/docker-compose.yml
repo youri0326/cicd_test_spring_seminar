@@ -1,0 +1,76 @@
+# Docker Composeのバージョン
+version: "3.8"
+
+services:
+
+  # -----------------------------
+  # MariaDB データベースコンテナ
+  # -----------------------------
+  mariadb:
+  
+    # 使用するDockerイメージ
+    image: mariadb:11    
+    # コンテナ名
+    container_name: mariadb-db
+    restart: always
+
+    # 環境変数
+    environment:
+      MYSQL_DATABASE: seminar_db
+      MYSQL_USER: seminar_user
+      MYSQL_PASSWORD: seminar_pass
+      MYSQL_ROOT_PASSWORD: root_pass
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "--password=root"] 
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s # 起動直後は少し待ってからチェック開始 
+           
+    volumes:
+      - db_data:/var/lib/mysql
+
+  # -----------------------------
+  # Spring Boot アプリ
+  # -----------------------------
+  spring-app:
+
+    # Dockerfileからビルド
+    build: .
+
+    # コンテナ名
+    container_name: spring-app
+
+    # ポート設定
+    ports:
+      - "8082:8080"
+
+    # Spring Boot に渡す環境変数
+    environment:
+      # DB接続URL
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/seminar_db
+      # DBユーザー
+      SPRING_DATASOURCE_USERNAME: root
+      # DBパスワード
+      SPRING_DATASOURCE_PASSWORD: root_pass
+      
+    depends_on:
+      mariadb:
+        condition: service_healthy # DBが「動いている」だけでなく「接続可能」になるまで待つ
+    restart: on-failure # もしDB接続で落ちても、自動で再起動して接続を試みる
+
+
+  # =========================
+  # テスト（Mockito / JUnit）
+  # =========================
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spring-test
+    command: ./mvnw test
+
+volumes:
+  db_data:

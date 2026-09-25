@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>User Detail</title>
+    <style>
+        .error { color: red; font-weight: bold; }
+        .detail-box { border: 1px solid #ccc; padding: 15px; width: 300px; }
+    </style>
+</head>
+<body>
+
+<h1>ユーザー詳細情報</h1>
+
+<!-- エラーメッセージがある場合（存在しないIDでアクセスした時など） -->
+<p th:if="${error}" th:text="${error}" class="error"></p>
+
+<!-- ユーザー情報が存在する場合のみ表示 -->
+<div th:if="${user}" class="detail-box">
+    <p><strong>ID:</strong> <span th:text="${user.id}">1</span></p>
+    <p><strong>名前:</strong> <span th:text="${user.name}">Taro Yamada</span></p>
+    <p><strong>メール:</strong> <span th:text="${user.email}">taro@example.com</span></p>
+</div>
+
+<hr>
+
+<!-- 動線：一覧へ戻るリンク -->
+<p><a th:href="@{/}">← ユーザー一覧に戻る</a></p>
+
+</body>
+</html>
